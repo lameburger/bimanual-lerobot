@@ -1,0 +1,50 @@
+{
+  "homing_offset": [
+    -2017,
+    3097,
+    -938,
+    -2081,
+    2072,
+    -2480
+  ],
+  "drive_mode": [
+    1,
+    1,
+    0,
+    0,
+    1,
+    0
+  ],
+  "start_pos": [
+    2043,
+    3102,
+    996,
+    2057,
+    2050,
+    2047
+  ],
+  "end_pos": [
+    3041,
+    -2073,
+    1962,
+    3105,
+    -1048,
+    3504
+  ],
+  "calib_mode": [
+    "DEGREE",
+    "DEGREE",
+    "DEGREE",
+    "DEGREE",
+    "DEGREE",
+    "LINEAR"
+  ],
+  "motor_names": [
+    "shoulder_pan",
+    "shoulder_lift",
+    "elbow_flex",
+    "wrist_flex",
+    "wrist_roll",
+    "gripper"
+  ]
+}

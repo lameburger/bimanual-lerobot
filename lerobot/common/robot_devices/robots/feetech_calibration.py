@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Logic to calibrate a robot arm built with feetech motors"""
+"""Logic to  a robot arm built with feetech motors"""
 # TODO(rcadene, aliberts): move this logic into the robot code when refactoring
 
 import time
@@ -92,7 +92,7 @@ def move_until_block(arm, motor_name, positive_direction=True, while_move_hook=N
             count = 0
 
 
-def move_to_calibrate(
+def move_to_(
     arm,
     motor_name,
     invert_drive_mode=False,
@@ -189,17 +189,17 @@ def run_arm_auto_calibration_so100(arm: MotorsBus, robot_type: str, arm_name: st
     arm.write("Goal_Position", init_ef_pos - 2048, "elbow_flex")
     time.sleep(2)
 
-    print("Calibrate shoulder_pan")
-    calib["shoulder_pan"] = move_to_calibrate(arm, "shoulder_pan")
+    print(" shoulder_pan")
+    calib["shoulder_pan"] = move_to_(arm, "shoulder_pan")
     arm.write("Goal_Position", calib["shoulder_pan"]["zero_pos"], "shoulder_pan")
     time.sleep(1)
 
-    print("Calibrate gripper")
-    calib["gripper"] = move_to_calibrate(arm, "gripper", invert_drive_mode=True)
+    print(" gripper")
+    calib["gripper"] = move_to_(arm, "gripper", invert_drive_mode=True)
     time.sleep(1)
 
-    print("Calibrate wrist_flex")
-    calib["wrist_flex"] = move_to_calibrate(arm, "wrist_flex")
+    print(" wrist_flex")
+    calib["wrist_flex"] = move_to_(arm, "wrist_flex")
     calib["wrist_flex"] = apply_offset(calib["wrist_flex"], offset=80)
 
     def in_between_move_hook():
@@ -211,8 +211,8 @@ def run_arm_auto_calibration_so100(arm: MotorsBus, robot_type: str, arm_name: st
         arm.write("Goal_Position", sl_pos - 1024, "shoulder_lift")
         time.sleep(2)
 
-    print("Calibrate elbow_flex")
-    calib["elbow_flex"] = move_to_calibrate(
+    print(" elbow_flex")
+    calib["elbow_flex"] = move_to_(
         arm, "elbow_flex", positive_first=False, in_between_move_hook=in_between_move_hook
     )
     calib["elbow_flex"] = apply_offset(calib["elbow_flex"], offset=80 - 1024)
@@ -224,8 +224,8 @@ def run_arm_auto_calibration_so100(arm: MotorsBus, robot_type: str, arm_name: st
         nonlocal arm, calib
         arm.write("Goal_Position", calib["elbow_flex"]["zero_pos"], "elbow_flex")
 
-    print("Calibrate shoulder_lift")
-    calib["shoulder_lift"] = move_to_calibrate(
+    print(" shoulder_lift")
+    calib["shoulder_lift"] = move_to_(
         arm,
         "shoulder_lift",
         invert_drive_mode=True,
@@ -254,8 +254,8 @@ def run_arm_auto_calibration_so100(arm: MotorsBus, robot_type: str, arm_name: st
     arm.write("Goal_Position", round(calib["gripper"]["end_pos"]), "gripper")
     time.sleep(2)
 
-    print("Calibrate wrist_roll")
-    calib["wrist_roll"] = move_to_calibrate(
+    print(" wrist_roll")
+    calib["wrist_roll"] = move_to_(
         arm, "wrist_roll", invert_drive_mode=True, positive_first=False, while_move_hook=while_move_hook
     )
 
@@ -325,17 +325,17 @@ def run_arm_auto_calibration_moss(arm: MotorsBus, robot_type: str, arm_name: str
 
     calib = {}
 
-    print("Calibrate shoulder_pan")
-    calib["shoulder_pan"] = move_to_calibrate(arm, "shoulder_pan")
+    print(" shoulder_pan")
+    calib["shoulder_pan"] = move_to_(arm, "shoulder_pan")
     arm.write("Goal_Position", calib["shoulder_pan"]["zero_pos"], "shoulder_pan")
     time.sleep(1)
 
-    print("Calibrate gripper")
-    calib["gripper"] = move_to_calibrate(arm, "gripper", invert_drive_mode=True)
+    print(" gripper")
+    calib["gripper"] = move_to_(arm, "gripper", invert_drive_mode=True)
     time.sleep(1)
 
-    print("Calibrate wrist_flex")
-    calib["wrist_flex"] = move_to_calibrate(arm, "wrist_flex", invert_drive_mode=True)
+    print(" wrist_flex")
+    calib["wrist_flex"] = move_to_(arm, "wrist_flex", invert_drive_mode=True)
     calib["wrist_flex"] = apply_offset(calib["wrist_flex"], offset=-210 + 1024)
 
     wr_pos = arm.read("Present_Position", "wrist_roll")
@@ -348,8 +348,8 @@ def run_arm_auto_calibration_moss(arm: MotorsBus, robot_type: str, arm_name: str
     arm.write("Goal_Position", calib["gripper"]["end_pos"], "gripper")
     time.sleep(1)
 
-    print("Calibrate wrist_roll")
-    calib["wrist_roll"] = move_to_calibrate(arm, "wrist_roll", invert_drive_mode=True)
+    print(" wrist_roll")
+    calib["wrist_roll"] = move_to_(arm, "wrist_roll", invert_drive_mode=True)
     calib["wrist_roll"] = apply_offset(calib["wrist_roll"], offset=790)
 
     arm.write("Goal_Position", calib["wrist_roll"]["zero_pos"] - 1024, "wrist_roll")
@@ -363,8 +363,8 @@ def run_arm_auto_calibration_moss(arm: MotorsBus, robot_type: str, arm_name: str
         nonlocal arm, calib
         arm.write("Goal_Position", calib["wrist_flex"]["zero_pos"], "wrist_flex")
 
-    print("Calibrate elbow_flex")
-    calib["elbow_flex"] = move_to_calibrate(
+    print(" elbow_flex")
+    calib["elbow_flex"] = move_to_(
         arm,
         "elbow_flex",
         invert_drive_mode=True,
@@ -382,8 +382,8 @@ def run_arm_auto_calibration_moss(arm: MotorsBus, robot_type: str, arm_name: str
         arm.write("Goal_Position", calib["wrist_flex"]["start_pos"], "wrist_flex")
         time.sleep(1)
 
-    print("Calibrate shoulder_lift")
-    calib["shoulder_lift"] = move_to_calibrate(
+    print(" shoulder_lift")
+    calib["shoulder_lift"] = move_to_(
         arm, "shoulder_lift", in_between_move_hook=in_between_move_shoulder_lift_hook
     )
     calib["shoulder_lift"] = apply_offset(calib["shoulder_lift"], offset=-1024)

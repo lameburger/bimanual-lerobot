@@ -243,7 +243,7 @@ class ManipulatorRobot:
 
         if self.robot_type in ["koch", "koch_bimanual", "aloha"]:
             from lerobot.common.robot_devices.motors.dynamixel import TorqueMode
-        elif self.robot_type in ["so100", "so101", "moss", "lekiwi"]:
+        elif self.robot_type in ["so100", "so101", "so101_bimanual", "moss", "lekiwi"]:
             from lerobot.common.robot_devices.motors.feetech import TorqueMode
 
         # We assume that at connection time, arms are in a rest position, and torque can
@@ -262,6 +262,8 @@ class ManipulatorRobot:
             self.set_aloha_robot_preset()
         elif self.robot_type in ["so100", "so101", "moss", "lekiwi"]:
             self.set_so100_robot_preset()
+        elif self.robot_type == "so101_bimanual":
+            self.set_so101_bimanual_preset()
 
         # Enable torque on all motors of the follower arms
         for name in self.follower_arms:
@@ -313,7 +315,7 @@ class ManipulatorRobot:
 
                     calibration = run_arm_calibration(arm, self.robot_type, name, arm_type)
 
-                elif self.robot_type in ["so100", "so101", "moss", "lekiwi"]:
+                elif self.robot_type in ["so100", "so101", "so101_bimanual", "moss", "lekiwi"]:
                     from lerobot.common.robot_devices.robots.feetech_calibration import (
                         run_arm_manual_calibration,
                     )
@@ -442,6 +444,35 @@ class ManipulatorRobot:
             self.follower_arms[name].write("Maximum_Acceleration", 254)
             self.follower_arms[name].write("Acceleration", 254)
 
+    def set_so101_bimanual_preset(self):
+        """Set optimized presets for SO101 bimanual robots."""
+        print("Setting SO101 bimanual robot presets...")
+        
+        # Configure leader arms
+        for name in self.leader_arms:
+            print(f"Configuring leader arm: {name}")
+            # Set P_Coefficient to lower value to avoid shakiness (Default is 32)
+            self.leader_arms[name].write("P_Coefficient", 16)
+            self.leader_arms[name].write("I_Coefficient", 0)
+            self.leader_arms[name].write("D_Coefficient", 32)
+            self.leader_arms[name].write("Lock", 0)
+            self.leader_arms[name].write("Maximum_Acceleration", 254)
+            self.leader_arms[name].write("Acceleration", 254)
+            
+        # Configure follower arms with higher responsiveness
+        for name in self.follower_arms:
+            print(f"Configuring follower arm: {name}")
+            # Mode=0 for Position Control
+            self.follower_arms[name].write("Mode", 0)
+            self.follower_arms[name].write("P_Coefficient", 24)  # Increased from 16 for faster response
+            self.follower_arms[name].write("I_Coefficient", 0)
+            self.follower_arms[name].write("D_Coefficient", 16)  # Decreased from 32 for less damping
+            self.follower_arms[name].write("Lock", 0)
+            self.follower_arms[name].write("Maximum_Acceleration", 254)
+            self.follower_arms[name].write("Acceleration", 254)
+            
+        print("✅ SO101 bimanual presets configured successfully!")
+
     def teleop_step(
         self, record_data=False
     ) -> None | tuple[dict[str, torch.Tensor], dict[str, torch.Tensor]]:
@@ -458,11 +489,23 @@ class ManipulatorRobot:
             leader_pos[name] = torch.from_numpy(leader_pos[name])
             self.logs[f"read_leader_{name}_pos_dt_s"] = time.perf_counter() - before_lread_t
 
-        # Send goal position to the follower
+        # Send goal position to the followers
+        # For bimanual control, both arms move simultaneously
         follower_goal_pos = {}
         for name in self.follower_arms:
             before_fwrite_t = time.perf_counter()
-            goal_pos = leader_pos[name]
+            try:
+                goal_pos = leader_pos[name]
+            except KeyError:
+                # Fallback: if follower arm doesn't have corresponding leader, use dummy position
+                print(f"Warning: No leader arm '{name}' found, using zero position for follower '{name}'")
+                # Create dummy position with same shape as other arms
+                if leader_pos:
+                    dummy_pos = torch.zeros_like(list(leader_pos.values())[0])
+                else:
+                    dummy_pos = torch.zeros(6)  # 6 motors for SO101
+                goal_pos = dummy_pos
+                leader_pos[name] = goal_pos  # Add to dict for consistency
 
             # Cap goal position when too far away from present position.
             # Slower fps expected due to reading from the follower.
