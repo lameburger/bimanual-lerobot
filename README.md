@@ -2,6 +2,8 @@
 
 Control two SO-101 arms simultaneously with bimanual teleoperation.
 
+![Demo](demo.gif)
+
 ## Quick Start
 
 ### 1. Install Dependencies
